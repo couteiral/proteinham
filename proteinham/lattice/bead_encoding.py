@@ -56,7 +56,7 @@ class BeadHamiltonian2D(object):
         for k in range(1, self.dim+1)])
 
     def steric_term(self):
-        """Implements the steric interaction."""
+        """Implements the steric part of the hamiltonian."""
     
         return sum([
             sum([
@@ -470,7 +470,7 @@ class BeadHamiltonian3D(object):
         )
 
     def pairwise(self, i, j):
-        """Implements the pairwisde interaction term
+        """Implements the pairwise interaction term
         between the ith and jth residues."""
     
         return  self.x_plus(i, j) +  self.y_plus(i, j) +  \
