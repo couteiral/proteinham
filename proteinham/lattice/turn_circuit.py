@@ -25,7 +25,7 @@ class TurnCircuitHamiltonian2D(object):
         self.int_mat  = int_matrix(pepstring)
 
         self.bit_list = [
-            sp.Symbol('q_{:d}'.format(i+1))
+            sp.Symbol('q_{:d}'.format(i+1), idempotent=True)
             for i in range(self.n_bits)
         ]
     

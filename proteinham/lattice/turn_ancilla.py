@@ -33,7 +33,7 @@ class TurnAncillaHamiltonian2D(object):
         for i in range(self.naas-3)])
     
         self.bit_list = [
-            sp.Symbol('q_{:d}'.format(i+1))
+            sp.Symbol('q_{:d}'.format(i+1), idempotent=True)
             for i in range(self.n_bits)
         ]
     
@@ -175,7 +175,7 @@ class TurnAncillaHamiltonian2D(object):
                             self.get(self.r_pointer(i)+1)) *
             self.circuit_yp(self.get(self.r_pointer(i+1)), 
                             self.get(self.r_pointer(i+1)+1))
-        for i in range(self.naas-1)])
+        for i in range(self.naas-2)])
     
     def steric_term(self):
         """Ensures that the chain does not overlap."""
