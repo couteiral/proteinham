@@ -23,3 +23,21 @@ class Hamiltonian(ABC):
     is_3D          = False
 
 
+    def _proc_input(self, pepstring):
+        self.pepstring = pepstring
+        self.naas      = len(pepstring)
+        self.int_mat   = int_matrix(pepstring)
+
+    def _create_bitreg(self):
+        self.bit_list  = [
+            sp.Symbol('q_%d' % (i+1), idempotent=True)
+            for i in range(self.n_bits)
+        ]
+
+    @abstractmethod
+    def build_exp(self):
+        pass
+
+    def get(self, i):
+        """Return the ith bit of the hamiltonian."""
+        return self.bit_list[k]
