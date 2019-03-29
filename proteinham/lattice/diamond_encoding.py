@@ -9,7 +9,7 @@ from functools import reduce
 from int_matrix import int_matrix
 
 
-class DiamondHamiltonian2D(object):
+class DiamondHamiltonian2D(Hamiltonian):
 
     is_Diamond = True
     is_2D      = True

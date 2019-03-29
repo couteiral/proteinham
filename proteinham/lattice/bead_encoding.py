@@ -1,14 +1,18 @@
 import math
 import numpy as np
 import sympy as sp
-from qlogic import *
 from tqdm import tqdm
 from copy import deepcopy
 from functools import reduce
+
+from qlogic import *
 from int_matrix import int_matrix
 
+import sys
+sys.path.append('../core/')
+from hamiltonian import Hamiltonian
 
-class BeadHamiltonian2D(object):
+class BeadHamiltonian2D(Hamiltonian):
 
     is_Bead = True
     is_2D   = True
@@ -18,21 +22,22 @@ class BeadHamiltonian2D(object):
         a protein hamiltonian of the "bead encoding" form,
         described by Perdomo et al., 2008."""
 
-        self.naas     = len(pepstring)
-        self.nbpd     = math.ceil( math.log2(self.naas) )
-        self.dim      = 2
-        self.n_bits   = self.dim * self.nbpd * self.naas
-        self.int_mat  = int_matrix(pepstring)
+        self.pepstring = pepstring
+        self.naas      = len(pepstring)
+        self.nbpd      = math.ceil( math.log2(self.naas) )
+        self.dim       = 2
+        self.n_bits    = self.dim * self.nbpd * self.naas
+        self.int_mat   = int_matrix(pepstring)
 
-        self.bit_list = [
+        self.bit_list  = [
             sp.Symbol('q_{:d}'.format(i+1), idempotent=True)
             for i in range(self.n_bits)
         ]
 
-        self.expr     = (self.naas+1) * self.steric_term()
-        self.expr    += self.naas * self.primary_structure_term()
-        self.expr    += self.interaction_term()
-        self.expr     = sp.expand(self.expr)
+        self.expr      = (self.naas+1) * self.steric_term()
+        self.expr     += self.naas * self.primary_structure_term()
+        self.expr     += self.interaction_term()
+        self.expr      = sp.expand(self.expr)
 
     def pointer(self, i, k):
         """Returns the index of the first bit   
@@ -259,7 +264,7 @@ class BeadHamiltonian2D(object):
         for i in range(1, self.naas+1)])
 
 
-class BeadHamiltonian3D(object):
+class BeadHamiltonian3D(Hamiltonian):
 
     is_Bead = True
     is_3D   = True

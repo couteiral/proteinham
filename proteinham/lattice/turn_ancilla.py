@@ -8,7 +8,7 @@ from functools import reduce
 from int_matrix import int_matrix
 
 
-class TurnAncillaHamiltonian2D(object):
+class TurnAncillaHamiltonian2D(Hamiltonian):
 
     def __init__(self, pepstring):
         """Encapsulates the expression and methods of

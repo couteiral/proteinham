@@ -9,7 +9,7 @@ from functools import reduce
 from int_matrix import int_matrix
 
 
-class TurnCircuitHamiltonian2D(object):
+class TurnCircuitHamiltonian2D(Hamiltonian):
 
     is_TurnCircuit = True
     is_2D          = True
@@ -32,7 +32,7 @@ class TurnCircuitHamiltonian2D(object):
         self.expr     = self.back_term()
         self.expr    += self.steric_term()
         self.expr    += self.interaction_term()
-        #self.expr     = sp.expand(self.expr)
+        self.expr     = sp.expand(self.expr)
 
     def get(self, k):
         """Access the kth bit of the hamiltonian."""

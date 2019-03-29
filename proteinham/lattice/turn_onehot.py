@@ -9,7 +9,7 @@ from functools import reduce
 from int_matrix import int_matrix
 
 
-class TurnOneHotHamiltonian2D(object):
+class TurnOneHotHamiltonian2D(Hamiltonian):
 
     is_TurnOneHot = True
     is_2D         = True
