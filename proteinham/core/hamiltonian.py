@@ -9,6 +9,7 @@ March 2019
 
 import sympy as sp
 from abc import *
+from copy import deepcopy
 
 from int_matrix import int_matrix
 
@@ -42,4 +43,13 @@ class Hamiltonian(ABC):
 
     def get(self, i):
         """Return the ith bit of the hamiltonian."""
-        return self.bit_list[k]
+        return self.bit_list[i]
+
+    def to_circuit(self):
+        circuit = deepcopy(self.expr)
+        for i in range(self.n_bits):
+            circuit = circuit.subs(self.bit_list[i],
+                                   1-sp.Symbol('Z_%d' % (i+1)) )
+
+        return sp.expand(circuit)
+
