@@ -10,6 +10,8 @@ March 2019
 import sympy as sp
 from abc import *
 
+from int_matrix import int_matrix
+
 
 class Hamiltonian(ABC):
 
