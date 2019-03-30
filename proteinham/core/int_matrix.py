@@ -232,7 +232,7 @@ def int_matrix(pepstring):
         for i in range(n_res):
             for j in range(n_res):
 
-                if i == j:
+                if i == j or abs(i-j) == 1:
                     continue
 
                 if residues[i] == 'H' and residues[j] == 'H':
@@ -243,7 +243,7 @@ def int_matrix(pepstring):
         for i in range(n_res):
             for j in range(n_res):
 
-                if i == j:
+                if i == j or abs(i-j) == 1:
                     continue
 
                 int_mat[i, j] = mj_dict[frozenset([residues[i], residues[j]])]
