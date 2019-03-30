@@ -51,5 +51,98 @@ class Hamiltonian(ABC):
             circuit = circuit.subs(self.bit_list[i],
                                    1-sp.Symbol('Z_%d' % (i+1)) )
 
-        return sp.expand(circuit)
+        self.circuit = sp.expand(circuit)
 
+    def write_maxsat(self, file_name, fmat='onehot'):
+
+        with open(file_name, 'w') as f:
+
+            if fmat == 'cnf':
+                f.writelines(self._process_cnf())
+            elif fmat == 'onehot':
+                f.writelines(self._process_onehot())
+            else:
+                raise ValueError('')
+
+    def _process_onehot(self):
+
+        template   = '% 06.2f' + ' %3d' * (self.n_bits) + '\n'
+        file_lines = list()
+
+        file_lines.extend([
+            '%s\n'    % self.pepstring,
+            '%d %d\n' % (self.n_terms, self.n_bits)
+        ])
+
+        for term in self.expr.args:
+
+            if term.is_number:
+                penalty = float(term)
+                bitterm = [0 for _ in range(self.n_bits)]
+
+            elif term.is_Symbol:
+                penalty = 1.0
+                bitterm = [0 if i != self._get_index(term) else i
+                           for i in range(self.n_bits)]
+            else:
+
+                if term.args[0].is_number:
+                    penalty = float( term.args[0] )
+                    bitterm = self._get_bitterm(term.args[1:])
+                else:
+                    penalty = 1.0
+                    bitterm = self._get_bitterm(term.args)
+
+            file_lines.append(template % (penalty, *bitterm))
+
+        return file_lines
+
+    def _process_cnf(self):
+
+        file_lines = list()
+        file_lines.extend([
+            '%s\n'    % self.pepstring,
+            '%d %d\n' % (self.n_terms, self.n_bits)
+        ])
+
+        for term in self.expr.args:
+
+            if term.is_number:
+                continue
+
+            elif term.is_Symbol:
+                penalty = 1.0
+                clauses = [i for i in range(self.n_bits)
+                           if i == self._get_index(term)]
+                
+            else:
+
+                if term.args[0].is_number:
+                    penalty = float( term.args[0] )
+                    clauses = self._get_clauses(term.args[1:])
+                else:
+                    penalty = 1.0
+                    clauses = self._get_clauses(term.args)
+   
+            if penalty > 0:
+                file_lines.append(
+                    ('% 06.2f' + ' %d' * len(clauses) + '\n')
+                     % (penalty, *clauses)
+                )
+            elif penalty < 0:
+                file_lines.append(
+                    ('% 06.2f' + ' -%d' * len(clauses) + '\n')
+                     % (-penalty, *clauses)
+                )
+
+        return file_lines
+    
+    def _get_bitterm(self, args):
+        active_bits = [self._get_index(x) for x in args]
+        return [0 if i not in active_bits else i for i in range(self.n_bits)]
+
+    def _get_clauses(self, args):
+        return [self._get_index(x) for x in args]
+
+    def _get_index(self, sym):
+        return int(str(sym).split('_')[-1])
