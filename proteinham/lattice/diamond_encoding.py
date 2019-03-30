@@ -1,12 +1,16 @@
 import math
 import numpy as np
 import sympy as sp
-from qlogic import *
 from tqdm import tqdm
 from copy import deepcopy
 from itertools import chain
 from functools import reduce
-from int_matrix import int_matrix
+
+from qlogic import *
+
+import sys
+sys.path.append('../core/')
+from hamiltonian import Hamiltonian
 
 
 class DiamondHamiltonian2D(Hamiltonian):
@@ -19,21 +23,19 @@ class DiamondHamiltonian2D(Hamiltonian):
         a protein hamiltonian of the "diamond encoding" form,
         described by Babbush et al., 2012."""
 
-        self.naas     = len(pepstring)
+        self._proc_input(pepstring)
         self.n_bits   = sum([self.n_k(k) for k in range(self.naas)])
-        self.dim      = 2
-        self.int_mat  = int_matrix(pepstring)
+        self._create_bitreg()
 
-        self.bit_list = [
-            sp.Symbol('q_{:d}'.format(i+1), idempotent=True)
-            for i in range(self.n_bits)
-        ]
-        
-        self.expr     = self.one_term()
-        self.expr    += self.primary_structure_term()
-        self.expr    += self.steric_term()
+        self.build_exp()
+       
+    def build_exp(self):
+        self.expr     = self.naas**2 * self.one_term()
+        self.expr    += self.naas * self.steric_term()
+        self.expr    += (self.naas-1) * self.primary_structure_term()
         self.expr    += self.interaction_term()
         self.expr     = sp.expand(self.expr)
+        self.n_terms  = len(self.expr.args)
 
     def pointer(self, i):
         """Returns the index of the first bit in
@@ -113,7 +115,7 @@ class DiamondHamiltonian2D(Hamiltonian):
         """Implements the primary structure part of the
         hamiltonian."""
     
-        return  (self.naas-2) +\
+        return (self.naas-2) -\
         sum([
             sum([
                 sum([
@@ -156,7 +158,7 @@ class DiamondHamiltonian2D(Hamiltonian):
                 qih = rhombus_h[i]
                 dist = math.sqrt(qih[0]**2 + qih[1]**2)
                 if dist == 1.0:
-                    expr += self.int_mat[0, h] * \
+                    expr -= self.int_mat[0, h] * \
                             self.get(self.pointer(h)+i)
     
         # Rest of residues
@@ -169,11 +171,10 @@ class DiamondHamiltonian2D(Hamiltonian):
                 for i in range(self.n_k(k)):
                     for j in range(self.n_k(h)):
     
-                        if not adjacency(i, k, j, h): continue
+                        if not self.adjacency(i, k, j, h): continue
     
-                        expr += self.int_mat[h, k] * \
+                        expr -= self.int_mat[h, k] * \
                                 self.get(self.pointer(k)+i) * \
                                 self.get(self.pointer(h)+j)
     
         return expr
-                       
