@@ -70,8 +70,8 @@ class Hamiltonian(ABC):
         file_lines = list()
 
         file_lines.extend([
-            '%s\n'    % self.pepstring,
-            '%d %d\n' % (self.n_terms, self.n_bits)
+        #    '%s\n'    % self.pepstring,
+            '%d %d\n' % (self.n_bits, self.n_terms)
         ])
 
         for term in self.expr.args:
@@ -82,7 +82,7 @@ class Hamiltonian(ABC):
 
             elif term.is_Symbol:
                 penalty = 1.0
-                bitterm = [0 if i != self._get_index(term) else i
+                bitterm = [0 if i != self._get_index(term) else i+1
                            for i in range(self.n_bits)]
             else:
 
@@ -101,8 +101,8 @@ class Hamiltonian(ABC):
 
         file_lines = list()
         file_lines.extend([
-            '%s\n'    % self.pepstring,
-            '%d %d\n' % (self.n_terms, self.n_bits)
+        #    '%s\n'    % self.pepstring,
+            '%d %d\n' % (self.n_bits, self.n_terms)
         ])
 
         for term in self.expr.args:
@@ -112,7 +112,7 @@ class Hamiltonian(ABC):
 
             elif term.is_Symbol:
                 penalty = 1.0
-                clauses = [i for i in range(self.n_bits)
+                clauses = [i+1 for i in range(self.n_bits)
                            if i == self._get_index(term)]
                 
             else:
@@ -139,10 +139,10 @@ class Hamiltonian(ABC):
     
     def _get_bitterm(self, args):
         active_bits = [self._get_index(x) for x in args]
-        return [0 if i not in active_bits else i for i in range(self.n_bits)]
+        return [0 if i not in active_bits else i+1 for i in range(self.n_bits)]
 
     def _get_clauses(self, args):
-        return [self._get_index(x) for x in args]
+        return [self._get_index(x)+1 for x in args]
 
     def _get_index(self, sym):
-        return int(str(sym).split('_')[-1])
+        return int(str(sym).split('_')[-1])-1
