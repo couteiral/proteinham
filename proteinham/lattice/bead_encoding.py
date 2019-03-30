@@ -38,6 +38,7 @@ class CommonBeadHamiltonian(Hamiltonian):
         self.expr     += self.naas * self.primary_structure_term()
         self.expr     += self.interaction_term()
         self.expr      = sp.expand(self.expr)
+        self.n_terms   = len(self.expr.args)
 
     def pointer(self, i, k):
         """Returns the index of the first bit   
@@ -145,8 +146,8 @@ class BeadHamiltonian2D(CommonBeadHamiltonian):
         return qand(
             [
                 qand([
-                     qnot(self.get(self.pointer(i, 1))),
-                     self.get(self.pointer(j, 1))
+                     qnot(self.get(self.pointer(i, 2))),
+                     self.get(self.pointer(j, 2))
                 ])
             ] +
             [
