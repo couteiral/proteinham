@@ -1,12 +1,16 @@
 import math
 import numpy as np
 import sympy as sp
-from qlogic import *
 from tqdm import tqdm, trange
 from copy import deepcopy
 from itertools import chain
 from functools import reduce
-from int_matrix import int_matrix
+
+from qlogic import *
+
+import sys
+sys.path.append('../core/')
+from hamiltonian import Hamiltonian
 
 
 class TurnCircuitHamiltonian2D(Hamiltonian):
@@ -14,25 +18,24 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
     is_TurnCircuit = True
     is_2D          = True
 
-    def __init__(self, pepstring):
+    def __init__(self, pepstring, ss_fmat='babej'):
         """Encapsulates the expression and methods of
         a protein hamiltonian of the "turn circuit encoding" 
         form, described by Babbush et al., 2012."""
-   
-        self.naas     = len(pepstring)
-        self.dim      = 2
-        self.n_bits   = 2*self.naas-2
-        self.int_mat  = int_matrix(pepstring)
+  
+        self._proc_input(pepstring) 
+        self.ss_fmat = ss_fmat
+        self.n_bits = 2*self.naas-2
+        self._sum_strings = dict()
+        self._create_bitreg()
+        self.build_exp()
 
-        self.bit_list = [
-            sp.Symbol('q_{:d}'.format(i+1), idempotent=True)
-            for i in range(self.n_bits)
-        ]
-    
-        self.expr     = self.back_term()
-        self.expr    += self.steric_term()
+    def build_exp(self): 
+        self.expr     = (self.naas+1) * self.back_term()
+        self.expr    += (self.naas+1) * self.steric_term()
         self.expr    += self.interaction_term()
         self.expr     = sp.expand(self.expr)
+        self.n_terms  = len(self.expr.args)
 
     def get(self, k):
         """Access the kth bit of the hamiltonian."""
@@ -69,37 +72,37 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
     
     def sum_string(self, i, j, k):
         """Computes the sum string."""
-    
         if i > j:
             raise ValueError("i > j")
-        ip = i
-        jp = j
+
+        if (i, j, k) in self._sum_strings.keys():
+            return self._sum_strings[(i, j, k)]
     
         if k == 'x+':
             sum_string = [self.circuit_xp(self.get(self.pointer(t)),
                                           self.get(self.pointer(t)+1))
-                          for t in range(ip, jp)]
+                          for t in range(i, j)]
         elif k == 'x-':
             sum_string = [self.circuit_xn(self.get(self.pointer(t)),
                                           self.get(self.pointer(t)+1))
-                          for t in range(ip, jp)]
+                          for t in range(i, j)]
     
         elif k == 'y+':
             sum_string = [self.circuit_yp(self.get(self.pointer(t)),
                                           self.get(self.pointer(t)+1))
-                          for t in range(ip, jp)]
+                          for t in range(i, j)]
     
         elif k == 'y-':
             sum_string = [self.circuit_yn(self.get(self.pointer(t)),
                                           self.get(self.pointer(t)+1))
-                          for t in range(ip, jp)]
+                          for t in range(i, j)]
     
         else:
             raise ValueError('k was {:s}'.format(k))
-    
-        n_layers = jp-ip-1
+   
+        n_layers = j-i-1
+        counter = np.zeros(n_layers) # lazy way to keep track of half-adders
         sum_string = list(reversed(sum_string))
-    
         for t in chain(range(n_layers),
                        reversed(range(n_layers-1))):
     
@@ -107,14 +110,24 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
                 iterator = range(0, t+1, 2) if t > 0 else [0]
             else:
                 iterator = range(1, t+1, 2) if t > 1 else [1]
+
             for h in iterator:
     
+                if self.ss_fmat == 'babej':
+                    if counter[h] > math.log2(j-i):
+                        continue
+                    else:
+                        counter[h] += 1
+
                 a, b = self.half_adder(sum_string[h],
                                        sum_string[h+1])
                 sum_string[h]   = a
                 sum_string[h+1] = b
-    
-        return [sp.expand(x) for x in reversed(sum_string)]
+
+        maximum = int(math.ceil(math.log2(j-i)))
+        sum_string = list(reversed(sum_string))
+        self._sum_strings[(i, j, k)] = [sp.expand(sum_string[x]) for x in range(maximum)]
+        return self._sum_strings[(i, j, k)]
 
     def back_term(self):
         """Ensures that the chain does not go
@@ -187,26 +200,26 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
                   sumstring['y-'][r])
         for r in range(maximum)])
     
-        return prefactor * (\
-        qxor(sumstring['x+'][0],
-             sumstring['x-'][0]) * \
-        qand([
+        return prefactor * \
+        ( qxor(sumstring['x+'][0],
+               sumstring['x-'][0]) \
+        * qand([
             qxnor(sumstring['x+'][r],
                   sumstring['x-'][r])
-        for r in range(1, maximum)]) + \
-        sumstring['x+'][0]*sumstring['x-'][0] * \
-        sum([
+        for r in range(1, maximum)]) \
+        + sumstring['x+'][0]*sumstring['x-'][0]
+        * sum([
             qxor(sumstring['x+'][p-1],
-                 sumstring['x+'][p]) * \
-            qand([
+                 sumstring['x+'][p]) \
+          * qand([
                 qxnor(sumstring['x+'][r],
                       sumstring['x+'][r+1])
-            for r in range(p-2)]) * \
-            qand([
+            for r in range(p-2)]) \
+          * qand([
                 qxor(sumstring['x+'][r],
                      sumstring['x-'][r])
-            for r in range(p)]) * \
-            qand([
+            for r in range(p)])  \
+          * qand([
                 qxnor(sumstring['x+'][r],
                       sumstring['x-'][r])
             for r in range(p+1, maximum)])
@@ -230,26 +243,26 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
                   sumstring['x-'][r])
         for r in range(maximum)])
     
-        return prefactor * (\
-        qxor(sumstring['y+'][0],
-             sumstring['y-'][0]) * \
-        qand([
+        return prefactor *\
+        ( qxor(sumstring['y+'][0],
+               sumstring['y-'][0])  \
+        * qand([
             qxnor(sumstring['y+'][r],
                   sumstring['y-'][r])
-        for r in range(1, maximum)]) + \
-        sumstring['y+'][0]*sumstring['y-'][0] * \
-        sum([
+        for r in range(1, maximum)]) \
+        + sumstring['y+'][0]*sumstring['y-'][0] \
+        * sum([
             qxor(sumstring['y+'][p-1],
-                 sumstring['y+'][p]) * \
-            qand([
+                 sumstring['y+'][p]) \
+          * qand([
                 qxnor(sumstring['y+'][r],
                       sumstring['y+'][r+1])
-            for r in range(p-2)]) * \
-            qand([
+            for r in range(p-2)]) \
+          * qand([
                 qxor(sumstring['y+'][r],
                      sumstring['y-'][r])
-            for r in range(p)]) * \
-            qand([
+            for r in range(p)]) \
+          * qand([
                 qxnor(sumstring['y+'][r],
                       sumstring['y-'][r])
             for r in range(p+1, maximum)])
@@ -264,8 +277,7 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
     
                 if self.int_mat[i, 1+i+2*j] == 0: continue
     
-                expr += self.int_mat[i, 1+i+2*j] * (self.a_x(i, 1+i+2*j) + \
+                expr -= self.int_mat[i, 1+i+2*j] * (self.a_x(i, 1+i+2*j) + \
                                                     self.a_y(i, 1+i+2*j))
     
         return expr
-
