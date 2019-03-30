@@ -25,7 +25,7 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         self.n_bits = 2*self.naas-2
         self.n_bits += sum([ 
             sum([
-                mu(i, j)
+                self.mu(i, j)
             for j in range(i+4, self.naas)])
         for i in range(self.naas-4)])
         self.n_bits += sum([
@@ -53,16 +53,16 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         the ith turn."""
         return 2*i-2 if i > 0 else 0
         
-    def o_pointer(self, i):
+    def o_pointer(self, i, j):
         """Points to the start of the string containing
         ancillary bits."""
         return 2*self.naas-2 + sum([
              sum([
-                mu(m, n)
+                self.mu(m, n)
             for n in range(m+4, self.naas)])
         for m in range(i)]) + \
         sum([
-            mu(i, n)
+            self.mu(i, n)
         for n in range(i+4, j)])
     
     
@@ -73,7 +73,7 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         if not self.start_bit: 
             self.start_bit = 2*self.naas-2 + sum([
                 sum([
-                    mu(i, j)
+                    self.mu(i, j)
                 for j in range(i+4, self.naas)])
             for i in range(self.naas-4)])
     
@@ -152,7 +152,7 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         """Computes \alpha_{ij}."""
         return sum([
             2**k * self.get(self.o_pointer(i, j) + k)
-        for k in range(mu(i,j))])
+        for k in range(self.mu(i,j))])
     
     def back_term(self):
         """Ensures that the chain does not go
