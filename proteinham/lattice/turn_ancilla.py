@@ -1,11 +1,15 @@
 import math
 import numpy as np
 import sympy as sp
-from qlogic import *
 from tqdm import tqdm
 from copy import deepcopy
 from functools import reduce
-from int_matrix import int_matrix
+
+from qlogic import *
+
+import sys
+sys.path.append('../core/')
+from hamiltonian import Hamiltonian
 
 
 class TurnAncillaHamiltonian2D(Hamiltonian):
@@ -15,9 +19,7 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         a protein hamiltonian of the "turn ancilla encoding" 
         form, described by Babbush et al., 2012."""
 
-        self.naas      = len(pepstring)
-        self.dim       = 2
-        self.int_mat   = int_matrix(pepstring)
+        self._proc_input(pepstring)
         self.start_bit = None
  
         self.n_bits = 2*self.naas-2
@@ -32,15 +34,15 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
             for j in range(i+3, self.naas)])
         for i in range(self.naas-3)])
     
-        self.bit_list = [
-            sp.Symbol('q_{:d}'.format(i+1), idempotent=True)
-            for i in range(self.n_bits)
-        ]
-    
-        self.expr      = self.back_term()
-        self.expr     += self.steric_term()
+        self._create_bitreg()
+        self.build_exp()
+
+    def build_exp(self):   
+        self.expr      = (self.naas+1) * self.back_term()
+        self.expr     += (self.naas+1) * self.steric_term()
         self.expr     += self.interaction_term()
         self.expr      = sp.expand(self.expr)
+        self.n_terms   = len(self.expr.args)
 
     def get(self, k):
         """Access the kth bit of the hamiltonian."""
@@ -132,10 +134,8 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
     def g(self, i, j):
         """Computes the distance between residues i and j."""
 
-        return (self.x_position(i) - \
-                self.x_position(j))**2 + \
-               (self.y_position(i) - \
-                self.y_position(j))**2
+        return (self.x_position(i) - self.x_position(j))**2 \
+             + (self.y_position(i) - self.y_position(j))**2
     
     def mu(self, i, j):
         """Computes \mu_{ij}."""
@@ -175,7 +175,7 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
                             self.get(self.r_pointer(i)+1)) *
             self.circuit_yp(self.get(self.r_pointer(i+1)), 
                             self.get(self.r_pointer(i+1)+1))
-        for i in range(self.naas-2)])
+        for i in range(self.naas-1)])
     
     def steric_term(self):
         """Ensures that the chain does not overlap."""
@@ -196,8 +196,8 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         for i in range(self.naas-3):
             for j in range(i+3, self.naas):
                 if self.int_mat[i, j] == 0: continue
-                term += self.get(self.i_pointer(i, j)) * \
-                        self.int_mat[i, j] * \
-                        ( 2 - self.g(i, j) )
+                term -= self.get(self.i_pointer(i, j)) \
+                      * self.int_mat[i, j] \
+                      * ( 2 - self.g(i, j) )
         return term
     
