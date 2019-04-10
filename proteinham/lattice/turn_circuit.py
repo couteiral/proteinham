@@ -34,7 +34,9 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
         self.expr     = (self.naas+1) * self.back_term()
         self.expr    += (self.naas+1) * self.steric_term()
         self.expr    += self.interaction_term()
-        self.expr     = sp.expand(self.expr)
+        self.expr     = sp.expand(self.expr, deep=True, power_base=False,
+                            power_exp=False, log=False, multinomial=True,
+                            basic=False, mul=True)
         self.n_terms  = len(self.expr.args)
 
     def get(self, k):
@@ -207,23 +209,22 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
             qxnor(sumstring['x+'][r],
                   sumstring['x-'][r])
         for r in range(1, maximum)]) \
-        + sumstring['x+'][0]*sumstring['x-'][0]
-        * sum([
-            qxor(sumstring['x+'][p-1],
-                 sumstring['x+'][p]) \
+        + sum([
+            qxor(sumstring['x+'][p-2],
+                 sumstring['x+'][p-1]) \
           * qand([
-                qxnor(sumstring['x+'][r],
-                      sumstring['x+'][r+1])
-            for r in range(p-2)]) \
+                qxnor(sumstring['x+'][r-1],
+                      sumstring['x+'][r])
+            for r in range(1, p-1)]) \
           * qand([
-                qxor(sumstring['x+'][r],
-                     sumstring['x-'][r])
-            for r in range(p)])  \
+                qxor(sumstring['x+'][r-1],
+                     sumstring['x-'][r-1])
+            for r in range(1, p+1)])  \
           * qand([
-                qxnor(sumstring['x+'][r],
-                      sumstring['x-'][r])
-            for r in range(p+1, maximum)])
-        for p in range(1, maximum)]))
+                qxnor(sumstring['x+'][r-1],
+                      sumstring['x-'][r-1])
+            for r in range(p+1, maximum+1)])
+        for p in range(2, maximum+1)]))
     
     def a_y(self, i, j):
     
@@ -234,7 +235,7 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
             'y-': self.sum_string(i, j, 'y-')
         }
     
-        maximum = int(math.ceil(math.log2(abs(i-j)))) if i-j !=0 else 0
+        maximum = int(math.ceil(math.log2(abs(i-j)))) if i-j != 0 else 0
     
         if maximum == 0: return 0
     
@@ -250,23 +251,22 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
             qxnor(sumstring['y+'][r],
                   sumstring['y-'][r])
         for r in range(1, maximum)]) \
-        + sumstring['y+'][0]*sumstring['y-'][0] \
-        * sum([
-            qxor(sumstring['y+'][p-1],
-                 sumstring['y+'][p]) \
+        + sum([
+            qxor(sumstring['y+'][p-2],
+                 sumstring['y+'][p-1]) \
           * qand([
-                qxnor(sumstring['y+'][r],
-                      sumstring['y+'][r+1])
-            for r in range(p-2)]) \
+                qxnor(sumstring['y+'][r-1],
+                      sumstring['y+'][r])
+            for r in range(1, p-1)]) \
           * qand([
-                qxor(sumstring['y+'][r],
-                     sumstring['y-'][r])
-            for r in range(p)]) \
+                qxor(sumstring['y+'][r-1],
+                     sumstring['y-'][r-1])
+            for r in range(1, p+1)])  \
           * qand([
-                qxnor(sumstring['y+'][r],
-                      sumstring['y-'][r])
-            for r in range(p+1, maximum)])
-        for p in range(1, maximum)]))
+                qxnor(sumstring['y+'][r-1],
+                      sumstring['y-'][r-1])
+            for r in range(p+1, maximum+1)])
+        for p in range(2, maximum+1)]))
     
     def interaction_term(self):
         """Computes contacts between residues."""
