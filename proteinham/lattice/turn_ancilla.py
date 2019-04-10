@@ -35,7 +35,6 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         for i in range(self.naas-3)])
     
         self._create_bitreg()
-        self.build_exp()
 
     def build_exp(self):   
         self.expr      = (self.naas+1) * self.back_term()
@@ -200,4 +199,3 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
                       * self.int_mat[i, j] \
                       * ( 2 - self.g(i, j) )
         return term
-    

@@ -27,8 +27,6 @@ class CommonBeadHamiltonian(Hamiltonian):
         self.n_bits = self.dim * self.nbpd * self.naas
         self._create_bitreg()
 
-        self.build_exp()
-
     @property
     def encoding(self):
         return 'bead'

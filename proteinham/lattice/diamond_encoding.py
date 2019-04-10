@@ -26,8 +26,6 @@ class DiamondHamiltonian2D(Hamiltonian):
         self._proc_input(pepstring)
         self.n_bits   = sum([self.n_k(k) for k in range(self.naas)])
         self._create_bitreg()
-
-        self.build_exp()
        
     def build_exp(self):
         self.expr     = self.naas**2 * self.one_term()

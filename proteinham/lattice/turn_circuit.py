@@ -28,7 +28,6 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
         self.n_bits = 2*self.naas-2
         self._sum_strings = dict()
         self._create_bitreg()
-        self.build_exp()
 
     def build_exp(self): 
         self.expr     = (self.naas+1) * self.back_term()
