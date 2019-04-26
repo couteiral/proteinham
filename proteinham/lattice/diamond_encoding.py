@@ -99,7 +99,7 @@ class DiamondHamiltonian2D(Hamiltonian):
             return 0
     
     def one_term(self):
-        """Implements the term tthat avoids multiple
+        """Implements the term that avoids multiple
         bits turned on for the same residue."""
     
         return sum([
