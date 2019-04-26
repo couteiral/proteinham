@@ -53,6 +53,18 @@ class Hamiltonian(ABC):
 
         self.circuit = sp.expand(circuit)
 
+    def test_bitstring(self, bitstring):
+        assert type(bitstring) is str
+        assert len(bitstring) == self.n_bits
+        assert set(bitstring).issubset({'1', '0'})
+
+        value = deepcopy(self.expr)
+        for ind, val in enumerate(bitstring):
+            value = value.subs(self.bit_list[ind],
+                               int(val))
+
+        return value
+
     def write_maxsat(self, file_name, fmat='onehot'):
 
         with open(file_name, 'w') as f:
@@ -134,6 +146,7 @@ class Hamiltonian(ABC):
                     ('% 06.2f' + ' -%d' * len(clauses) + '\n')
                      % (-penalty, *clauses)
                 )
+
 
         return file_lines
     
