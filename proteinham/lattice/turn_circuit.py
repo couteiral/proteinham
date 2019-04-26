@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import sympy as sp
+import symengine as se
 from tqdm import tqdm, trange
 from copy import deepcopy
 from itertools import chain
@@ -28,14 +29,13 @@ class TurnCircuitHamiltonian2D(Hamiltonian):
         self.n_bits = 2*self.naas-2
         self._sum_strings = dict()
         self._create_bitreg()
+        self.build_exp()
 
     def build_exp(self): 
         self.expr     = (self.naas+1) * self.back_term()
         self.expr    += (self.naas+1) * self.steric_term()
         self.expr    += self.interaction_term()
-        self.expr     = sp.expand(self.expr, deep=True, power_base=False,
-                            power_exp=False, log=False, multinomial=True,
-                            basic=False, mul=True)
+        self.expr     = se.expand(self.expr)
         self.n_terms  = len(self.expr.args)
 
     def get(self, k):

@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import sympy as sp
+import symengine as se
 from tqdm import tqdm
 from copy import deepcopy
 from itertools import chain
@@ -26,13 +27,14 @@ class DiamondHamiltonian2D(Hamiltonian):
         self._proc_input(pepstring)
         self.n_bits   = sum([self.n_k(k) for k in range(self.naas)])
         self._create_bitreg()
+        self.build_exp()
        
     def build_exp(self):
         self.expr     = self.naas**2 * self.one_term()
         self.expr    += self.naas * self.steric_term()
         self.expr    += (self.naas-1) * self.primary_structure_term()
         self.expr    += self.interaction_term()
-        self.expr     = sp.expand(self.expr)
+        self.expr     = se.expand(self.expr)
         self.n_terms  = len(self.expr.args)
 
     def pointer(self, i):

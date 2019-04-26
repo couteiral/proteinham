@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import sympy as sp
+import symengine as se
 from abc import *
 from tqdm import tqdm
 from copy import deepcopy
@@ -26,6 +27,7 @@ class CommonBeadHamiltonian(Hamiltonian):
         self.nbpd   = math.ceil( math.log2(len(pepstring)) )
         self.n_bits = self.dim * self.nbpd * self.naas
         self._create_bitreg()
+        self.build_exp()
 
     @property
     def encoding(self):
@@ -35,7 +37,7 @@ class CommonBeadHamiltonian(Hamiltonian):
         self.expr      = (self.naas+1) * self.steric_term()
         self.expr     += self.naas * self.primary_structure_term()
         self.expr     += self.interaction_term()
-        self.expr      = sp.expand(self.expr)
+        self.expr      = se.expand(self.expr)
         self.n_terms   = len(self.expr.args)
 
     def pointer(self, i, k):

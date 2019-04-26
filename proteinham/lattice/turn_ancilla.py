@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import sympy as sp
+import symengine as se
 from tqdm import tqdm
 from copy import deepcopy
 from functools import reduce
@@ -35,12 +36,13 @@ class TurnAncillaHamiltonian2D(Hamiltonian):
         for i in range(self.naas-3)])
     
         self._create_bitreg()
+        self.build_exp()
 
     def build_exp(self):   
         self.expr      = (self.naas+1) * self.back_term()
         self.expr     += (self.naas+1) * self.steric_term()
         self.expr     += self.interaction_term()
-        self.expr      = sp.expand(self.expr)
+        self.expr      = se.expand(self.expr)
         self.n_terms   = len(self.expr.args)
 
     def get(self, k):
