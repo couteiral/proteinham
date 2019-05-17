@@ -11,7 +11,7 @@ import sympy as sp
 from abc import *
 from copy import deepcopy
 
-from int_matrix import int_matrix
+from .int_matrix import int_matrix
 
 
 class Hamiltonian(ABC):
@@ -40,6 +40,11 @@ class Hamiltonian(ABC):
     @abstractmethod
     def build_exp(self):
         pass
+
+    def set_bit(self, i, k):
+        assert type(i) is int
+        assert type(k) is int
+        self.bit_list[i] = k
 
     def get(self, i):
         """Return the ith bit of the hamiltonian."""
