@@ -8,11 +8,8 @@ from copy import deepcopy
 from itertools import chain
 from functools import reduce
 
-from qlogic import *
-
-import sys
-sys.path.append('../core/')
-from hamiltonian import Hamiltonian
+from .qlogic import *
+from proteinham.core.hamiltonian import Hamiltonian
 
 
 class CommonTurnCircuitHamiltonian(Hamiltonian):
@@ -89,7 +86,66 @@ class TurnCircuitHamiltonian2D(CommonTurnCircuitHamiltonian):
         """Implements a circuit that returns 1
         if the chain moves in the direction y-."""
         return (1-q_i)*(1-q_j)
+
+    def sum_string(self, i, j, k):
+        """Computes the sum string."""
+        if i > j:
+            raise ValueError("i > j")
+
+        if (i, j, k) in self._sum_strings.keys():
+            return self._sum_strings[(i, j, k)]
     
+        if k == 'x+':
+            sum_string = [self.circuit_xp(self.get(self.pointer(t)),
+                                          self.get(self.pointer(t)+1))
+                          for t in range(i, j)]
+        elif k == 'x-':
+            sum_string = [self.circuit_xn(self.get(self.pointer(t)),
+                                          self.get(self.pointer(t)+1))
+                          for t in range(i, j)]
+    
+        elif k == 'y+':
+            sum_string = [self.circuit_yp(self.get(self.pointer(t)),
+                                          self.get(self.pointer(t)+1))
+                          for t in range(i, j)]
+    
+        elif k == 'y-':
+            sum_string = [self.circuit_yn(self.get(self.pointer(t)),
+                                          self.get(self.pointer(t)+1))
+                          for t in range(i, j)]
+    
+        else:
+            raise ValueError('k was {:s}'.format(k))
+   
+        n_layers = j-i-1
+        counter = np.zeros(n_layers) # lazy way to keep track of half-adders
+        sum_string = list(reversed(sum_string))
+        for t in chain(range(n_layers),
+                       reversed(range(n_layers-1))):
+    
+            if t % 2 == 0:
+                iterator = range(0, t+1, 2) if t > 0 else [0]
+            else:
+                iterator = range(1, t+1, 2) if t > 1 else [1]
+
+            for h in iterator:
+    
+                if self.ss_fmat == 'babej':
+                    if counter[h] > math.log2(j-i):
+                        continue
+                    else:
+                        counter[h] += 1
+
+                a, b = self.half_adder(sum_string[h],
+                                       sum_string[h+1])
+                sum_string[h]   = a
+                sum_string[h+1] = b
+
+        maximum = int(math.ceil(math.log2(j-i)))
+        sum_string = list(reversed(sum_string))
+        self._sum_strings[(i, j, k)] = [sp.expand(sum_string[x]) for x in range(maximum)]
+        return self._sum_strings[(i, j, k)]
+
     def back_term(self):
         """Ensures that the chain does not go
         back on itself."""
@@ -599,7 +655,7 @@ class TurnCircuitHamiltonian3D(CommonTurnCircuitHamiltonian):
             for r in range(p+1, maximum+1)])
         for p in range(2, maximum+1)]))
 
-    def interaction_term_ij(self):
+    def interaction_term_ij(self, i, j):
         return -1* self.int_mat[i, j] * (self.a_x(i, j) + \
                                          self.a_y(i, j) + \
                                          self.a_z(i, j))
@@ -616,16 +672,3 @@ class TurnCircuitHamiltonian3D(CommonTurnCircuitHamiltonian):
                 expr += interaction_term_ij(i, 1+i+2*j)
 
         return expr
-
-if __name__ == '__main__':
-
-    import time
-
-    ham = TurnCircuitHamiltonian3D('HPHHPH')
-
-    print('Starting to expand expression ...')
-    start = time.time()
-    ham.build_exp()
-    print('Time : %f' % (time.time()-start))
-
-    ham.write_maxsat('tuci3d_hphhph.dat')

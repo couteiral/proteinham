@@ -1,12 +1,13 @@
 import math
 import numpy as np
 import sympy as sp
-from qlogic import *
 from tqdm import tqdm, trange
 from copy import deepcopy
 from itertools import chain
 from functools import reduce
-from int_matrix import int_matrix
+
+from qlogic import *
+from 
 
 
 class TurnOneHotHamiltonian2D(Hamiltonian):

@@ -7,11 +7,8 @@ from tqdm import tqdm
 from copy import deepcopy
 from functools import reduce
 
-from qlogic import *
-
-import sys
-sys.path.append('../core/')
-from hamiltonian import Hamiltonian
+from .qlogic import *
+from proteinham.core.hamiltonian import Hamiltonian
 
 class CommonTurnAncillaHamiltonian(Hamiltonian):
 
