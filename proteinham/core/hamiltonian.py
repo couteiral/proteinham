@@ -53,7 +53,7 @@ class Hamiltonian(ABC):
     def to_circuit(self):
         circuit = deepcopy(self.expr)
         for i in range(self.n_bits):
-            circuit = circuit.subs(self.bit_list[i],
+            circuit = circuit.subs(sp.Symbol('q_%d' % (i+1)),
                                    1-sp.Symbol('Z_%d' % (i+1)) )
 
         self.circuit = sp.expand(circuit)
