@@ -83,7 +83,7 @@ class Hamiltonian(ABC):
 
     def _process_onehot(self):
 
-        template   = '% 06.2f' + ' %3d' * (self.n_bits) + '\n'
+        template   = '% 06.8f' + ' %3d' * (self.n_bits) + '\n'
         file_lines = list()
 
         file_lines.extend([
