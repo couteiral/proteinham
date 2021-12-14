@@ -9,7 +9,3 @@ If you came here from "Investigating the potential for a limited quantum speedup
 ## Authors
 
 This project was started by __Carlos Outeiral__, as part of his PhD at the University of Oxford.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE.md](../proteinham/master/LICENSE) file for details.
