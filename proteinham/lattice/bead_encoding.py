@@ -35,6 +35,8 @@ class CommonBeadHamiltonian(Hamiltonian):
         self.expr     += self.naas * self.primary_structure_term()
         self.expr     += self.interaction_term()
         self.expr      = se.expand(self.expr)
+        self.expr      = sp.expand(self.expr)
+
         self.n_terms   = len(self.expr.args)
 
     def pointer(self, i, k):

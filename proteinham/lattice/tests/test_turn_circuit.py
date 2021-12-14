@@ -168,3 +168,139 @@ def test_HPPHP_2D():
     for bstring, energy in bitstrings.items():
         eigval = ham.test_bitstring(bstring)
         assert eigval == energy
+
+
+def test_sumstring_2D():
+
+    ham = TurnCircuitHamiltonian2D('HPPHP')
+
+    for i in range(5):
+        for j in range(i+1, 5):
+
+            sumstring = {
+                'x+': ham.sum_string(i, j, 'x+'),
+                'x-': ham.sum_string(i, j, 'x-'),
+                'y+': ham.sum_string(i, j, 'y+'),
+                'y-': ham.sum_string(i, j, 'y-')
+            }
+
+        for bstring in
+
+
+def test_interaction_2D():
+
+prefactor = qand([
+    qxnor(sumstring['x+'][r],
+          sumstring['x-'][r])
+for r in range(maximum)])
+
+first_qxor = qxor(sumstring['y+'][0], sumstring['y-'][0])
+first_qand = qand([
+    qxnor(sumstring['y+'][r],
+          sumstring['y-'][r])
+for r in range(1, maximum)]) 
+correction = qxnor(sumstring['y+'][0],
+                   sumstring['y-'][0])
+final_sum = sum([
+    qxor(sumstring['y+'][p-2],
+         sumstring['y+'][p-1]) \
+  * qand([
+        qxnor(sumstring['y+'][r-1],
+              sumstring['y+'][r])
+    for r in range(1, p-1)]) \
+  * qand([
+        qxor(sumstring['y+'][r-1],
+             sumstring['y-'][r-1])
+    for r in range(1, p+1)])  \
+  * qand([
+        qxnor(sumstring['y+'][r-1],
+              sumstring['y-'][r-1])
+    for r in range(p+1, maximum+1)])
+for p in range(2, maximum+1)])
+
+ham.expr = prefactor
+print('prefactor : %d' % ham.test_bitstring(bitstring))
+
+ham.expr = first_qxor
+print('first_qxor : %d' % ham.test_bitstring(bitstring))
+
+ham.expr = first_qand
+print('first_qand : %d' % ham.test_bitstring(bitstring))
+
+ham.expr = final_sum
+print('final_sum : %d' % ham.test_bitstring(bitstring))
+
+ham.expr = data.a_y(i, j)
+hit = ham.test_bitstring(bitstring) if data.expr != 0 else 0
+print('total a_y : %d' % hit)
+
+print('FINAL SUM DECOMPOSED')
+for p in range(1, maximum):
+
+    print('  p = %d' % p)
+
+    first_term = qxor(sumstring['y+'][p-1],
+                      sumstring['y+'][p])
+    second_term = qand([
+                qxnor(sumstring['y+'][r],
+                      sumstring['y+'][r+1])
+            for r in range(p-2)])
+    third_term = qand([
+                qxor(sumstring['y+'][r],
+                     sumstring['y-'][r])
+            for r in range(p)])
+    fourth_term = qand([
+                qxnor(sumstring['y+'][r],
+                      sumstring['y-'][r])
+            for r in range(p+1, maximum-1)])
+
+    ham.expr = first_term
+    hit = ham.test_bitstring(bitstring) if type(data.expr) is not int else data.expr
+    print('    first_term : %d' % hit)
+
+    ham.expr = second_term
+    hit = ham.test_bitstring(bitstring) if type(data.expr) is not int else data.expr
+    print('    second_term : %d' % hit)
+
+    ham.expr = third_term
+    hit = ham.test_bitstring(bitstring) if type(data.expr) is not int else data.expr
+    print('    third_term : %d' % hit)
+
+    ham.expr = fourth_term
+    hit = ham.test_bitstring(bitstring) if type(data.expr) is not int else data.expr
+    print('    fourth_term : %d' % hit)
+
+    print('    DECOMPOSITION SECOND TERM')
+    for r in range(p-2):
+
+        term = qxnor(sumstring['y+'][r],
+                     sumstring['y-'][r+1])
+
+        ham.expr = term
+        hit = ham.test_bitstring(bitstring) if type(data.expr) is not int else data.expr
+        print('    -> term %d : %d' % (r, hit))
+
+print('Steric')
+for i in range(6):
+    for j in range(i+1, 6):
+
+        ham.expr = data.overlap(i, j)
+        hit = ham.test_bitstring(bitstring) if data.expr != 0 else 0
+        print('steric (%d, %d)  =   %d' % (i, j, hit))
+
+print('A_X and A_Y')
+for i in range(6):
+    for j in range(i+1, 6):
+
+        ham.expr = data.a_x(i, j)
+        hit = ham.test_bitstring(bitstring) if data.expr != 0 else 0
+        print('x (%d, %d)  =   %d' % (i, j, hit))
+
+        ham.expr = data.a_y(i, j)
+        hit = ham.test_bitstring(bitstring) if data.expr != 0 else 0
+        print('y (%d, %d)  =   %d' % (i, j, hit))
+
+print('BITSTRINGS')
+ham.expr = data.interaction_term()
+for bstring in bitstrings:
+    print('%s : %d' % (bstring, ham.test_bitstring(bstring)))

@@ -24,12 +24,12 @@ class DiamondHamiltonian2D(Hamiltonian):
         self._proc_input(pepstring)
         self.n_bits   = sum([self.n_k(k) for k in range(self.naas)])
         self._create_bitreg()
-        self.build_exp()
+        #self.build_exp()
        
     def build_exp(self):
         self.expr     = self.naas**2 * self.one_term()
-        self.expr    += self.naas * self.steric_term()
-        self.expr    += (self.naas-1) * self.primary_structure_term()
+        self.expr    += (self.naas+1) * self.steric_term()
+        self.expr    += self.naas * self.primary_structure_term()
         self.expr    += self.interaction_term()
         self.expr     = se.expand(self.expr)
         self.n_terms  = len(self.expr.args)
@@ -135,10 +135,15 @@ class DiamondHamiltonian2D(Hamiltonian):
                 for i in range(self.n_k(k))])
             for h in range(k+1, self.naas)])
         for k in range(1, self.naas-1)])
+
+    #def interaction_term_ij(self, i, j):
+    #    """Implements the pairwise interaction term
+    #    between the ith and jth residues."""
+
+    #    if i == 0:
     
     def interaction_term(self):
-        """Implements the pairwise interaction term
-        between the ith and jth residues."""
+        """Implements the pairwise interaction term"""
     
         expr = sp.numbers.Integer(0)
     

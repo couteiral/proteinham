@@ -15,7 +15,7 @@ from matplotlib.collections import PatchCollection
 
 
 def plot(string, encoding, N, fig=None, ax=None,
-         colouring=None):
+         colouring=None, int_list=None):
     """Plots a lattice protein model."""
 
     if   encoding == 'bead':
@@ -27,9 +27,8 @@ def plot(string, encoding, N, fig=None, ax=None,
     else:
         raise ValueError('Encoding unrecognised.')
 
-    peptide += np.array([2.0, 2.0])
-    draw_peptide(peptide, radius=0.2, colouring=colouring,
-                 int_list=None, fig=fig, ax=ax)
+    draw_peptide(peptide+2, radius=0.2, colouring=colouring,
+                 int_list=int_list, fig=fig, ax=ax)
 
 
 
@@ -39,7 +38,7 @@ def draw_peptide(peptide, save_fig=None, radius=0.2,
     """Returns a depiction of the peptide."""
 
     if fig is None or ax is None:
-        fig, ax = plt.subplots(figsize=(8, 8))
+        fig, ax = plt.subplots(figsize=(4, 4))
     n_residues = len(peptide)
 
     # Draw grid
@@ -124,21 +123,3 @@ def draw_peptide(peptide, save_fig=None, radius=0.2,
 
     ax.axis('equal')
     ax.axis('off')
-
-
-#if __name__ == '__main__':
-#
-#    exit()
-#    with open('tuan-hpph.pubo.out') as f:
-#        data = [x.split()[0] for x in f.readlines()]
-#
-#    fig, axes = plt.subplots(nrows=5, ncols=5, figsize=(8, 8))
-#    axes = [x for axlist in axes for x in axlist]
-#
-#    for i in range(25):
-#
-#        plot(data[i], 'turn', 4, fig=fig, ax=axes[i],
-#             colouring=['g', 'r', 'r', 'g'])
-#
-#    plt.show()
-#

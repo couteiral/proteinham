@@ -54,7 +54,7 @@ class Hamiltonian(ABC):
         circuit = deepcopy(self.expr)
         for i in range(self.n_bits):
             circuit = circuit.subs(sp.Symbol('q_%d' % (i+1)),
-                                   (1-sp.Symbol('Z_%d' % (i+1)))/2 )
+                                   0.5 * (1-sp.Symbol('Z_%d' % (i+1), idempotent=True)))
 
         self.circuit = sp.expand(circuit)
 
@@ -83,7 +83,7 @@ class Hamiltonian(ABC):
 
     def _process_onehot(self):
 
-        template   = '% 06.8f' + ' %3d' * (self.n_bits) + '\n'
+        template   = '%06.8f' + ' %3d' * (self.n_bits) + '\n'
         file_lines = list()
 
         file_lines.extend([

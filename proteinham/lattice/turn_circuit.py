@@ -37,7 +37,7 @@ class CommonTurnCircuitHamiltonian(Hamiltonian):
             self.expr += (self.naas+1)**2 * self.redun_term()
         self.expr     += (self.naas+1) * self.steric_term()
         self.expr     += self.interaction_term()
-        self.expr      = se.expand(self.expr)
+        #self.expr      = se.expand(self.expr)
         self.n_terms   = len(self.expr.args)
 
     def get(self, k):

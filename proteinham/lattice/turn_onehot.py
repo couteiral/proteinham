@@ -7,7 +7,6 @@ from itertools import chain
 from functools import reduce
 
 from qlogic import *
-from 
 
 
 class TurnOneHotHamiltonian2D(Hamiltonian):
